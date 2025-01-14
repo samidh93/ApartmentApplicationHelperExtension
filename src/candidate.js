@@ -1,0 +1,3 @@
+// candidate.js
+
+'use strict';

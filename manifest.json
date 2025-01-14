@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "Apartment Application Helper",
+  "version": "1.0",
+  "description": "An extension to assist with apartment applications on different platforms.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "activeTab",
+    "storage",
+    "tabs",
+    "webNavigation",
+    "webRequest",
+    "nativeMessaging",
+    "notifications",
+    "downloads"
+  ],
+  "content_security_policy": {
+    "sandbox": "sandbox allow-scripts;",
+    "extension_pages": "script-src 'self'; object-src 'self'; worker-src 'self'"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "dist/bundle.js", 
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["./src/content.js", "./node_modules/tesseract.js/dist/tesseract.min.js"],
+      "type": "module"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+        "resources": ["*"],
+        "matches": ["<all_urls>"],
+        "type": "module"
+
+    }
+],
+  "action": {
+    "default_popup": "./html/popup.html",
+    "default_icon": {
+      "16": "icons/apartments64.png",
+      "48": "icons/apartments64.png",
+      "128": "icons/apartments64.png"
+    }
+  },
+  "icons": {
+    "16": "icons/apartments.png",
+    "48": "icons/apartments.png",
+    "128": "icons/apartments.png"
+  }
+  
+}

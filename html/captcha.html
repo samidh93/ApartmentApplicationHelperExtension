@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Captcha Area Selection</title>
+    <script src="https://docs.opencv.org/master/opencv.js" async></script>
+</head>
+<body>
+    <h1>Automated Captcha Area Selection</h1>
+    <canvas id="captchaCanvas" width="400" height="300" style="border:1px solid #000;"></canvas>
+
+    <script>
+        // Load OpenCV.js
+        let cv;
+        const loadOpenCV = async () => {
+            cv = await cvModule();
+            main();
+        };
+        loadOpenCV();
+
+        async function main() {
+            const imgElement = document.getElementById('captchaImage');
+            const canvas = document.getElementById('captchaCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Load image
+            const img = await loadImage(imgElement.src);
+
+            // Convert to grayscale
+            const grayImg = new cv.Mat();
+            cv.cvtColor(img, grayImg, cv.COLOR_RGBA2GRAY);
+
+            // Load template (representing the captcha area)
+            const template = await loadImage('../img/immo.png');
+            const templateGray = new cv.Mat();
+            cv.cvtColor(template, templateGray, cv.COLOR_RGBA2GRAY);
+
+            // Match template
+            const result = new cv.Mat();
+            cv.matchTemplate(grayImg, templateGray, result, cv.TM_CCOEFF_NORMED);
+
+            // Find max correlation location
+            const minMax = cv.minMaxLoc(result);
+            const maxPoint = minMax.maxLoc;
+
+            // Extract captcha area
+            const captchaWidth = template.cols;
+            const captchaHeight = template.rows;
+            const captchaX = maxPoint.x;
+            const captchaY = maxPoint.y;
+            const captchaROI = new cv.Rect(captchaX, captchaY, captchaWidth, captchaHeight);
+            const captchaArea = grayImg.roi(captchaROI);
+
+            // Draw rectangle around captcha area
+            cv.rectangle(img, captchaROI, [255, 0, 0, 255], 2);
+
+            // Display result
+            cv.imshow('captchaCanvas', img);
+
+            // Clean up
+            grayImg.delete();
+            templateGray.delete();
+            result.delete();
+            captchaArea.delete();
+            img.delete();
+            template.delete();
+        }
+
+        async function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(cv.imread(img));
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+    </script>
+</body>
+</html>
